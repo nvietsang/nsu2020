@@ -56,7 +56,7 @@ if __name__ == '__main__':
 		for j in range(64):
 			M[j][i] = m[j]
 
-	A = []
+	AI = []
 	for i in range(6):
 		si = []
 		for j in range(64):
@@ -64,7 +64,10 @@ if __name__ == '__main__':
 
 		matSi = np.array(si)
 		matM = np.array(M)
-		matA = np.matmul(matSi, np.linalg.inv(matM)) % 2
+		matAI = np.matmul(matSi, np.linalg.inv(matM)) % 2
 
-		A.append([int(v) for v in list(matA)])
+		AI.append([int(v) for v in list(matAI)])
 
+	for i in range(64):
+		if AI[0][i] == 1:
+			print('{} - {}'.format(AI[0][i], cbnts[i]))
