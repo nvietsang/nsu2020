@@ -1,3 +1,4 @@
+from dahuffman import HuffmanCodec
 
 file_name = "JPEG_Encoding-test_data_matrices.txt"
 N = 8
@@ -23,7 +24,6 @@ def get_new_idx(idx, row, col):
 	return new_idx
 
 
-
 def convert_mat2vec(matrix):
 	vector = [0]*(N*N)
 	for idx in range(N*N):
@@ -34,15 +34,15 @@ def convert_mat2vec(matrix):
 
 	return vector
 
-def enc_huffmann_algo(vector, hmcode):
+def enc_huffman_algo(vector, hmcode):
 	bit_string = ''
-	n_pos_elements = len([x for x in vector if x!=0])
-	b_pos_elements = bin(n_pos_elements)[2:]
-	b_pos_elements = '0'*(6-len(b_pos_elements)) + b_pos_elements
-	bit_string += b_pos_elements
+	# n_pos_elements = len([x for x in vector if x!=0])
+	# b_pos_elements = bin(n_pos_elements)[2:]
+	# b_pos_elements = '0'*(6-len(b_pos_elements)) + b_pos_elements
+	# bit_string += b_pos_elements
 
 	for i in range(N*N-1, -1, -1):
-		if vector[i] != 0:
+		if vector[i] != '0':
 			end_idx = i+1
 			break
 
@@ -52,11 +52,25 @@ def enc_huffmann_algo(vector, hmcode):
 			e_bit_string = '0'
 		else:
 			e_bit_string = hmcode[str(e)]
-			e_bit_string = '1'*len(e_bit_string) + '0' + e_bit_string
+			# e_bit_string = '1'*len(e_bit_string) + '0' + e_bit_string
 
 		bit_string += e_bit_string
 
 	return bit_string
+
+def dec_huffman_algo(bit_string, root):
+	message = []
+	node = root
+	for b in bit_string:
+		if b == '0':
+			node = node.left
+		if b == '1':
+			node = node.right
+		if type(node) is str:
+			message.append(node)
+			node = root
+	return message
+
 
 
 def enc_example_algo(vector):
@@ -72,6 +86,7 @@ def enc_example_algo(vector):
 			break
 
 	vector = vector[:end_idx]
+
 	for e in vector:
 		if e == 0:
 			e_bit_string = '0'
@@ -91,7 +106,7 @@ def dec_example_algo(bit_string):
 	b_non_zero = bit_string[:6]
 	n_non_zero = int(b_non_zero, 2)
 	bit_string = bit_string[6:]
-	assert bit_string[0] == '1'
+	# assert bit_string[0] == '1'
 
 	idx = 0
 	while(len(bit_string) > 0):
@@ -118,42 +133,41 @@ def dec_example_algo(bit_string):
 	return vector
 
 class NodeTree(object):
+	def __init__(self, left=None, right=None):
+		self.left = left
+		self.right = right
 
-    def __init__(self, left=None, right=None):
-        self.left = left
-        self.right = right
+	def children(self):
+		return (self.left, self.right)
 
-    def children(self):
-        return (self.left, self.right)
+	def nodes(self):
+		return (self.left, self.right)
 
-    def nodes(self):
-        return (self.left, self.right)
-
-    def __str__(self):
-        return '%s_%s' % (self.left, self.right)
+	def __str__(self):
+		return '%s_%s' % (self.left, self.right)
 
 def huffman_code_tree(node, left=True, binString=''):
-    if type(node) is str:
-        return {node: binString}
-    (l, r) = node.children()
-    d = dict()
-    d.update(huffman_code_tree(l, True, binString + '0'))
-    d.update(huffman_code_tree(r, False, binString + '1'))
-    return d
+	if type(node) is str:
+		return {node: binString}
+	(l, r) = node.children()
+	d = dict()
+	d.update(huffman_code_tree(l, True, binString + '0'))
+	d.update(huffman_code_tree(r, False, binString + '1'))
+	return d
 
 
 if __name__ == '__main__':
 	# TEST
-	mat = [	[47, 9, 2, 0, 1, 0, 0 , 0], 
-			[-12, 10, -1, -4, 0, 0, 0, 0], 
-			[3, -5, 1, 0, 0, 0, 0, 0], 
-			[1, -1, 0, 0, 0, 0, 0, 0], 
-			[-2, 0, 0, 0, 0, 0, 0, 0], 
-			[0, 0, 0, 0, 0, 0, 0, 0], 
-			[0, 0, 0, 0, 0, 0, 0, 0], 
-			[0, 0, 0, 0, 0, 0, 0, 0]]
+	# mat = [	[47, 9, 2, 0, 1, 0, 0 , 0], 
+	# 		[-12, 10, -1, -4, 0, 0, 0, 0], 
+	# 		[3, -5, 1, 0, 0, 0, 0, 0], 
+	# 		[1, -1, 0, 0, 0, 0, 0, 0], 
+	# 		[-2, 0, 0, 0, 0, 0, 0, 0], 
+	# 		[0, 0, 0, 0, 0, 0, 0, 0], 
+	# 		[0, 0, 0, 0, 0, 0, 0, 0], 
+	# 		[0, 0, 0, 0, 0, 0, 0, 0]]
 
-	vector = convert_mat2vec(mat)
+	# vector = convert_mat2vec(mat)
 	# bit_string = enc_example_algo(vec)
 	# res = '0011101111110101111111101001111100100110111111010101101001001110001101110001001011110000101'
 	# if bit_string == res:
@@ -161,76 +175,90 @@ if __name__ == '__main__':
 	# vector = dec_example_algo(bit_string)
 	
 	# READ FILE
-	# f = open(file_name, 'r')
-	# data = f.readlines()
-	# f.close()
+	f = open(file_name, 'r')
+	data = f.readlines()
+	f.close()
 
-	# data = [line.replace(' \n', '') for line in data if line != '\n' and line != '']
-	# data = [line.split(' ') for line in data]
-	# data = [[int(c) for c in line] for line in data]
+	data = [line.replace(' \n', '') for line in data if line != '\n' and line != '']
+	data = [line.split(' ') for line in data]
+	data = [[int(c) for c in line] for line in data]
 
-	# matrices = []
-	# mat = []
+	matrices = []
+	mat = []
 
-	# for i, line in enumerate(data):
-	# 	mat.append(line)
-	# 	if i%N == N-1:
-	# 		matrices.append(mat)
-	# 		mat = []
+	for i, line in enumerate(data):
+		mat.append(line)
+		if i%N == N-1:
+			matrices.append(mat)
+			mat = []
 
 	# # GIVEN ALGO
-	# sum_len = 0
-	# for i, matrix in enumerate(matrices):
-	# 	vector = convert_mat2vec(matrix)
-	# 	bit_string = enc_example_algo(vector)
-	# 	len_b = len(bit_string)
-	# 	print('Matrix {} - bit-length: {}'.format(i, len_b))
-	# 	sum_len += len_b
+	sum_len1 = 0
+	for i, matrix in enumerate(matrices):
+		vector = convert_mat2vec(matrix)
+		bit_string = enc_example_algo(vector)
+		len_b = len(bit_string)
+		print('Matrix {} - bit-length: {}'.format(i, len_b))
+		sum_len1 += len_b
+		decoded = dec_example_algo(bit_string)
+		assert decoded == vector
 
-	# print('Total bit-length: {}'.format(sum_len))
+	print('Total bit-length: {}'.format(sum_len1))
 
 	# HUFFMANN CODE
+	# build tree
 	string = []
-	for line in mat:
-		for num in line:
-			if num != 0:
-				string.append(str(num))
-	# string = []
-	# for mat in matrices:
-	# 	for line in mat:
-	# 		for num in line:
-	# 			string.append(str(num))
-
+	for matrix in matrices:
+		vector = convert_mat2vec(matrix)
+		for i in range(N*N-1, -1, -1):
+			if vector[i] != 0:
+				end_idx = i+1
+				break
+		vector = vector[:end_idx]
+		for v in vector:
+			string.append(str(v))
+	
 	freq = {}
 	for c in string:
-	    if c in freq:
-	        freq[c] += 1
-	    else:
-	        freq[c] = 1
+		if c in freq:
+			freq[c] += 1
+		else:
+			freq[c] = 1
 
 	freq = sorted(freq.items(), key=lambda x: x[1], reverse=True)
 	nodes = freq
 
 	while len(nodes) > 1:
-	    (key1, c1) = nodes[-1]
-	    (key2, c2) = nodes[-2]
-	    nodes = nodes[:-2]
-	    node = NodeTree(key1, key2)
-	    nodes.append((node, c1 + c2))
+		(key1, c1) = nodes[-1]
+		(key2, c2) = nodes[-2]
+		nodes = nodes[:-2]
+		node = NodeTree(key1, key2)
+		nodes.append((node, c1 + c2))
+		nodes = sorted(nodes, key=lambda x: x[1], reverse=True)
 
-	    nodes = sorted(nodes, key=lambda x: x[1], reverse=True)
+	root = nodes[0][0]
+	huffmanCode = huffman_code_tree(root)
 
-	huffmanCode = huffman_code_tree(nodes[0][0])
+	# print(' Char | Huffman code ')
+	# print('----------------------')
+	# for (char, frequency) in freq:
+	# 	print(' %-4r |%12s' % (char, huffmanCode[char]))
 
-	print(' Char | Huffman code ')
-	print('----------------------')
-	for (char, frequency) in freq:
-	    print(' %-4r |%12s' % (char, huffmanCode[char]))
 
-	bit_string = enc_huffmann_algo(vector, huffmanCode)
-	print(bit_string)
-	print(len(bit_string))
+	# encode
+	sum_len2 = 0
+	for i, matrix in enumerate(matrices):
+		vector = convert_mat2vec(matrix)
+		vector = [str(c) for c in vector]
+		bit_string = enc_huffman_algo(vector, huffmanCode)
+		len_b = len(bit_string)
+		print('Matrix {} - bit-length: {}'.format(i, len_b))
+		sum_len2 += len_b
+		decoded = dec_huffman_algo(bit_string, root)
+		decoded = decoded + ['0']*(N*N-len(decoded))
+		assert decoded == vector
 
+	print('Total bit-length: {} - {}'.format(sum_len1, sum_len2))
 
 
 
